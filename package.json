@@ -1,0 +1,19 @@
+{
+  "name": "lily_bot",
+  "version": "1.0.0",
+  "description": "A greeting and conversation bot for MelbNaNo.",
+  "main": "main.js",
+  "scripts": {
+    "test": "tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lisushka/Lily_Bot.git"
+  },
+  "author": "Dawn E. Collett",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lisushka/Lily_Bot/issues"
+  },
+  "homepage": "https://github.com/lisushka/Lily_Bot#readme"
+}
