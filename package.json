@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "A greeting and conversation bot for MelbNaNo.",
   "main": "main.js",
+  "dependencies": {
+    "discord.js": "^11.3.2",
+    "winston": "^2.4.1"
+  },
   "scripts": {
     "test": "tests.js"
   },

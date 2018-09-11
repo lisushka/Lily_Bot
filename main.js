@@ -3,7 +3,7 @@ const config = require("./config.json");
 const constants = require("./constants.js");
 const logger = require("./logger.js");
 
-client = new Discord.client();
+client = new Discord.Client();
 
 client.on("ready", () => {
     logger.info("Lily is online");
@@ -13,24 +13,31 @@ var cmdList = {
     "hug": {
         name: "hug",
         description: "Hug a fellow Wrimo.",
-        usage: "@user",
+        usage: "[@user]",
         process: function(client,msg,suffix) {
-            // hug placeholder
-
-            // hug without suffix hugs author
-
-            // hug with @ hugs @-user
-
-            // hug with another suffix hugs the text
+            if (msg.mentions.members.size > 0) {
+                // hug with @ hugs @-user
+                logger.info("entered block");
+                msg.mentions.members.forEach(function(member) {
+                    msg.channel.send(member + ", would you like a hug?");
+                  });
+            } else if (!(suffix == "")) {
+                // hug with another suffix hugs the text
+                msg.channel.send("*Lily hugs " + suffix + ".*");
+            } else {
+                // hug without suffix hugs author
+                msg.channel.send(msg.author + ", would you like a hug?");
+            }
         }
     },
     "fetch": {
         name: "fetch",
         description: "Find an <item> for a fellow Wrimo.",
-        usage: "item @user",
+        usage: "[@user] [item]",
 		process: function(client,msg,suffix) {
-            // fetch placeholder
-
+            // choose fetch message
+            var choiceID = (Math.floor(Math.random() * constants.FETCH_LIST
+                .length));
             // fetch without suffix fetches a random object
 
             // fetch with @ fetches a rendom object for @-user
@@ -43,22 +50,31 @@ var cmdList = {
     "pillow": {
         name: "pillow",
         description: "Pillow a fellow Wrimo.",
-        usage: "@user",
+        usage: "[@user]",
 		process: function(client,msg,suffix) {
-            // pillow placeholder
-
-            // pillow without suffix pillows the user
-
-            // pillow with @ pillows the @-user
-
-            // pillow with another suffix pillows the text
+            // choose pillow text
+            var choiceID = (Math.floor(Math.random() * constants.PILLOW_LIST
+                .length));
+            if (!(suffix == "")) {
+                // pillow with suffix pillows the text
+                var msgToSend = constants.PILLOW_LIST[choiceID].replace
+                    ("%u", suffix);
+                msg.channel.send(msgToSend);
+            } else {
+                // pillow without suffix pillows author
+                var msgToSend = constants.PILLOW_LIST[choiceID].replace
+                    ("%u", msg.author);
+                msg.channel.send(msgToSend);
+            }
 		}
     },
     "weather": {
         name: "weather",
         description: "What's the weather like today?",
 		process: function(client,msg,suffix) {
-            // weather placeholder
+            var choiceID = (Math.floor(Math.random() * constants.WEATHER_LIST
+                .length));
+            msg.channel.send(constants.WEATHER_LIST[choiceID]);
 		}
     },
     "roll": {
@@ -164,8 +180,8 @@ var cmdList = {
 
 client.on('message', (msg) => {
     if(msg.isMentioned(client.user)){
-        msg.channel.send("Hi, I'm Lily. I'm here to greet new users, fetch "
-            + " things and offer hugs.  Use !help to find out more.");
+        msg.channel.send("Hi, I'm Lily. I'm here to greet new users, fetch"
+            + " things, and offer hugs.  Use ?help to find out more.");
     }
     if(msg.author.id != client.user.id && (msg.content.startsWith(constants
         .CMD_PREFIX))){
@@ -227,7 +243,7 @@ client.on('message', (msg) => {
 			}
 		} else {
             msg.channel.send(cmdData + " is not a valid command."
-             + " Type !help for a list of commands.");
+             + " Type ?help for a list of commands.");
 		}
 	} else {
 		return
@@ -235,9 +251,9 @@ client.on('message', (msg) => {
 });
 
 client.on('guildMemberAdd', member => {
-    member.guild.channels.get('channelID').send("Welcome to "
+    member.guild.channels.find("name", "general").send("Welcome to "
         + member.guild.name + ", " + member + "! Please read our Code of"
-        + " Conduct in " + constants.rulesLoc + ", and introduce yourself in"
+        + " Conduct in " + constants.rulesLoc + ", and introduce yourself in "
         + constants.introLoc + ".\nThe required format for introductions can be"
         + " found in the pinned post."); 
 });
