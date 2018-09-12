@@ -1,20 +1,21 @@
-var rulesLoc = "#server-rules";
-var introLoc = "#introductions";
+var rulesLoc = {default: "#server-rules"};
+var introLoc = {default: "#introductions"};
 var botName = "Lily";
+var huggableList = {};
 const CMD_PREFIX = "?";
 const FETCH_LIST =
-    ["%n rummages in a closet, and fetches %i",
-    "%n dives into the ocean, and retrieves %i",
-    "%n hops into a dragon's hoard, and snatches %i",
-    "%n picks the lock of the treasure chest, and presents %i",
-    "%n opens the safe, and gets out %i",
-    "%n waves a magic wand, and conjures %i",
-    "%n turns off the oven, and removes %i",
-    "%n climbs through the window, and holds out %i",
-    "%n goes through the Box of Tricks, and finds %i",
-    "%n sneaks out of the basement, and proffers %i",
-    "%n lands an Unidentified Flying Object, and produces %i",
-    "%n slides down the slippery slope, and offers %i"
+    [botName + " rummages in a closet, and fetches %i for %u.",
+    botName + " dives into the ocean, and retrieves %i for %u.",
+    botName + " hops into a dragon's hoard, and snatches %i for %u.",
+    botName + " picks the lock of the treasure chest, and presents %i to %u.",
+    botName + " opens the safe, and gets out %i for %u.",
+    botName + " waves a magic wand, and conjures %i for %u.",
+    botName + " turns off the oven, and removes %i for %u.",
+    botName + " climbs through the window, and holds out %i to %u.",
+    botName + " goes through the Box of Tricks, and finds %i for %u.",
+    botName + " sneaks out of the basement, and proffers %i for %u.",
+    botName + " lands an Unidentified Flying Object, and produces %i for %u.",
+    botName + " slides down the slippery slope, and offers %i to %u."
 ];
 const PILLOW_LIST =
     [botName + " jumps out of a rabbit hole, and bats %u with a pillow.",
@@ -50,6 +51,7 @@ const WEATHER_LIST =
 exports.rulesLoc = rulesLoc;
 exports.introLoc = introLoc;
 exports.botName = botName;
+exports.huggableList = huggableList;
 exports.CMD_PREFIX = CMD_PREFIX;
 exports.FETCH_LIST = FETCH_LIST;
 exports.PILLOW_LIST = PILLOW_LIST;

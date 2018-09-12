@@ -17,8 +17,8 @@ var cmdList = {
         process: function(client,msg,suffix) {
             if (msg.mentions.members.size > 0) {
                 // hug with @ hugs @-user
-                logger.info("entered block");
                 msg.mentions.members.forEach(function(member) {
+
                     msg.channel.send(member + ", would you like a hug?");
                   });
             } else if (!(suffix == "")) {
@@ -26,6 +26,7 @@ var cmdList = {
                 msg.channel.send("*Lily hugs " + suffix + ".*");
             } else {
                 // hug without suffix hugs author
+
                 msg.channel.send(msg.author + ", would you like a hug?");
             }
         }
@@ -33,19 +34,27 @@ var cmdList = {
     "fetch": {
         name: "fetch",
         description: "Find an <item> for a fellow Wrimo.",
-        usage: "[@user] [item]",
+        usage: "item [@user]",
 		process: function(client,msg,suffix) {
-            // choose fetch message
+            var args = suffix.split(" ");
+            // choose fetch text
             var choiceID = (Math.floor(Math.random() * constants.FETCH_LIST
                 .length));
-            // fetch without suffix fetches a random object
-
-            // fetch with @ fetches a rendom object for @-user
-
-            // fetch with item and @ fetches an item for @-user
-
-            // fetch with item fetches an item
-		}
+            if (msg.mentions.members.size > 0) {
+                // fetch with @-mention fetches the item for the mentioned user
+                msg.mentions.members.forEach(function(member) {
+                    msg.channel.send(member + ", would you like a hug?");
+                });
+            } else if (!(suffix == "")) {
+                // fetch with suffix fetches the item for the author
+                var msgToSend = constants.FETCH_LIST[choiceID].replace
+                    ("%u", suffix);
+                msg.channel.send(msgToSend);
+            } else {
+                // fetch without suffix throws error
+                msg.channel.send(msg.author + ", I need to know what to get!");
+            }
+        }
     },
     "pillow": {
         name: "pillow",
@@ -180,8 +189,14 @@ var cmdList = {
 
 client.on('message', (msg) => {
     if(msg.isMentioned(client.user)){
-        msg.channel.send("Hi, I'm Lily. I'm here to greet new users, fetch"
-            + " things, and offer hugs.  Use ?help to find out more.");
+        if () {
+
+        } else {
+            msg.channel.send("Hi, I'm Lily. I'm here to greet new users, fetch"
+                + " things, and offer hugs.  I use the " + constants.CMD_PREFIX
+                + " prefix.  Use " + constants.CMD_PREFIX
+                + " help to find out more.");
+        }
     }
     if(msg.author.id != client.user.id && (msg.content.startsWith(constants
         .CMD_PREFIX))){
@@ -241,9 +256,6 @@ client.on('message', (msg) => {
                 msg.channel.send("Unknown error.  See log file for details.");
                 logger.error('Error %s: %s.', e, e.stack);
 			}
-		} else {
-            msg.channel.send(cmdData + " is not a valid command."
-             + " Type ?help for a list of commands.");
 		}
 	} else {
 		return
