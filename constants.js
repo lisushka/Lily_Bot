@@ -1,5 +1,5 @@
-var rulesLoc = {default: "#server-rules"};
-var introLoc = {default: "#introductions"};
+var rulesLoc = {default: "server-rules"};
+var introLoc = {default: "introductions"};
 var botName = "Lily";
 var huggableList = {};
 const CMD_PREFIX = "?";

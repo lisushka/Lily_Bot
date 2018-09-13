@@ -18,7 +18,7 @@ var cmdList = {
             if (msg.mentions.members.size > 0) {
                 // hug with @ hugs @-user
                 msg.mentions.members.forEach(function(member) {
-
+                    constants.huggableList[member] = true;
                     msg.channel.send(member + ", would you like a hug?");
                   });
             } else if (!(suffix == "")) {
@@ -26,7 +26,7 @@ var cmdList = {
                 msg.channel.send("*Lily hugs " + suffix + ".*");
             } else {
                 // hug without suffix hugs author
-
+                constants.huggableList[msg.author] = true;
                 msg.channel.send(msg.author + ", would you like a hug?");
             }
         }
@@ -189,8 +189,18 @@ var cmdList = {
 
 client.on('message', (msg) => {
     if(msg.isMentioned(client.user)){
-        if () {
+        if (constants.huggableList[msg.author] == true) {
+            if (msg.content.toLowerCase().search("yes") > -1) {
+                msg.channel.send(constants.botName + " hugs " + msg.author
+                    + ".");
+                constants.huggableList();
+            } else if (msg.content.toLowerCase().search("no") > -1) {
+                msg.channel.send("Okay, " + msg.author + ".  Carry on!")
 
+            } else {
+                msg.channel.send("Would you like a hug?  Please respond"
+                    + " Yes or No so I can do other things!");
+            }
         } else {
             msg.channel.send("Hi, I'm Lily. I'm here to greet new users, fetch"
                 + " things, and offer hugs.  I use the " + constants.CMD_PREFIX
@@ -263,10 +273,14 @@ client.on('message', (msg) => {
 });
 
 client.on('guildMemberAdd', member => {
+    var rulesChannel = member.guild.channels.find("name", constants
+        .rulesLoc["default"]);
+    var introChannel = member.guild.channels.find("name", constants
+        .introLoc["default"]);
     member.guild.channels.find("name", "general").send("Welcome to "
         + member.guild.name + ", " + member + "! Please read our Code of"
-        + " Conduct in " + constants.rulesLoc + ", and introduce yourself in "
-        + constants.introLoc + ".\nThe required format for introductions can be"
+        + " Conduct in " + rulesChannel + ", and introduce yourself in "
+        + introChannel + ".\nThe required format for introductions can be"
         + " found in the pinned post."); 
 });
 
