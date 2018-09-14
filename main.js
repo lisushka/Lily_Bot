@@ -34,21 +34,34 @@ var cmdList = {
     "fetch": {
         name: "fetch",
         description: "Find an <item> for a fellow Wrimo.",
-        usage: "item [@user]",
-		process: function(client,msg,suffix) {
-            var args = suffix.split(" ");
+        usage: "[@user] item",
+        process: function(client,msg,suffix) {
             // choose fetch text
             var choiceID = (Math.floor(Math.random() * constants.FETCH_LIST
                 .length));
+            var stripSuffix = suffix.replace(/ *\<[^)]*\> */g, "");
             if (msg.mentions.members.size > 0) {
+                var memberList = "";
                 // fetch with @-mention fetches the item for the mentioned user
-                msg.mentions.members.forEach(function(member) {
-                    msg.channel.send(member + ", would you like a hug?");
+                var loopCheck = 0;
+                msg.mentions.members.forEach(function(member, index, array) {
+                    memberList += member;
+                    logger.info(loopCheck);
+                    logger.info(array.length);
+                    if (loopCheck < msg.mentions.members.size - 2) {
+                        memberList += ", ";
+                    } else if (loopCheck < msg.mentions.members.size - 1) {
+                        memberList += ", and ";
+                    }
+                    loopCheck++;
                 });
+                var msgToSend = constants.FETCH_LIST[choiceID].replace
+                    ("%i", stripSuffix).replace("%u", memberList);
+                msg.channel.send(msgToSend);
             } else if (!(suffix == "")) {
                 // fetch with suffix fetches the item for the author
                 var msgToSend = constants.FETCH_LIST[choiceID].replace
-                    ("%u", suffix);
+                    ("%i", suffix).replace("%u", msg.author);
                 msg.channel.send(msgToSend);
             } else {
                 // fetch without suffix throws error
@@ -60,31 +73,32 @@ var cmdList = {
         name: "pillow",
         description: "Pillow a fellow Wrimo.",
         usage: "[@user]",
-		process: function(client,msg,suffix) {
+        process: function(client,msg,suffix) {
             // choose pillow text
             var choiceID = (Math.floor(Math.random() * constants.PILLOW_LIST
                 .length));
+            var msgToSend = "";
             if (!(suffix == "")) {
                 // pillow with suffix pillows the text
-                var msgToSend = constants.PILLOW_LIST[choiceID].replace
+                msgToSend = constants.PILLOW_LIST[choiceID].replace
                     ("%u", suffix);
                 msg.channel.send(msgToSend);
             } else {
                 // pillow without suffix pillows author
-                var msgToSend = constants.PILLOW_LIST[choiceID].replace
+                msgToSend = constants.PILLOW_LIST[choiceID].replace
                     ("%u", msg.author);
                 msg.channel.send(msgToSend);
             }
-		}
+        }
     },
     "weather": {
         name: "weather",
         description: "What's the weather like today?",
-		process: function(client,msg,suffix) {
+        process: function(client,msg,suffix) {
             var choiceID = (Math.floor(Math.random() * constants.WEATHER_LIST
                 .length));
             msg.channel.send(constants.WEATHER_LIST[choiceID]);
-		}
+        }
     },
     "roll": {
         name: "roll",
@@ -178,16 +192,16 @@ var cmdList = {
             + " separated by commas",
         usage: "list",
         type: "other",
-		process: function(client,msg,suffix) {
+        process: function(client,msg,suffix) {
             var items = suffix.split(",");
             var choiceID = (Math.floor(Math.random() * items.length));
             msg.channel.send(msg.author + ", from " + suffix + ", I selected **"
                 + items[choiceID].trim() + "**");
-		}
+        }
     }
 }
 
-client.on('message', (msg) => {
+client.on("message", (msg) => {
     if(msg.isMentioned(client.user)){
         if (constants.huggableList[msg.author] == true) {
             if (msg.content.toLowerCase().search("yes") > -1) {
@@ -205,7 +219,7 @@ client.on('message', (msg) => {
             msg.channel.send("Hi, I'm Lily. I'm here to greet new users, fetch"
                 + " things, and offer hugs.  I use the " + constants.CMD_PREFIX
                 + " prefix.  Use " + constants.CMD_PREFIX
-                + " help to find out more.");
+                + "help to find out more.");
         }
     }
     if(msg.author.id != client.user.id && (msg.content.startsWith(constants
@@ -215,7 +229,7 @@ client.on('message', (msg) => {
             .substring(constants.CMD_PREFIX.length).toLowerCase();
         var suffix = msg.content.substring(cmdData.length
             + constants.CMD_PREFIX.length + 1)
-		var cmd = cmdList[cmdData];
+        var cmd = cmdList[cmdData];
         if(cmdData === "help"){
             if(suffix){
                 var cmd = cmdList[suffix];
@@ -235,44 +249,44 @@ client.on('message', (msg) => {
                 } catch(e) {
                     msg.channel.send("That command does not exist.");
                 }
-			} else {
+            } else {
                 msg.author.send("**Lily's Commands:**").then(function(){
                 var helpMsg = "";
                 for(var i in cmdList) {
                     helpMsg += "**" + constants.CMD_PREFIX;
                     var cmdName = cmdList[i].name;
                     if(cmdName){
-						helpMsg += cmdName;
+                        helpMsg += cmdName;
                     }
                     var cmdUse = cmdList[i].usage;
                     if(cmdUse){
-						helpMsg += " " + cmdUse;
-					}
+                        helpMsg += " " + cmdUse;
+                    }
                     var cmdDesc = cmdList[i].description;
                     if(cmdDesc){
-						helpMsg += ":** " + cmdDesc;
-					}
+                        helpMsg += ":** " + cmdDesc;
+                    }
                     helpMsg += "\n";
                 }
                 msg.channel.send(msg.author + ", I sent you a DM.");
-                msg.author.send(helpMsg);	
-			});
-		    }
+                msg.author.send(helpMsg);
+            });
+            }
         }
-		else if(cmd) {
-		    try{
-				cmd.process(client,msg,suffix);
-			} catch(e){
+        else if(cmd) {
+            try{
+                cmd.process(client,msg,suffix);
+            } catch(e){
                 msg.channel.send("Unknown error.  See log file for details.");
-                logger.error('Error %s: %s.', e, e.stack);
-			}
-		}
-	} else {
-		return
+                logger.error("Error %s: %s.", e, e.stack);
+            }
+        }
+    } else {
+        return
     }
 });
 
-client.on('guildMemberAdd', member => {
+client.on("guildMemberAdd", member => {
     var rulesChannel = member.guild.channels.find("name", constants
         .rulesLoc["default"]);
     var introChannel = member.guild.channels.find("name", constants
@@ -281,10 +295,10 @@ client.on('guildMemberAdd', member => {
         + member.guild.name + ", " + member + "! Please read our Code of"
         + " Conduct in " + rulesChannel + ", and introduce yourself in "
         + introChannel + ".\nThe required format for introductions can be"
-        + " found in the pinned post."); 
+        + " found in the pinned post.");
 });
 
-process.on('uncaughtException', function(e) {
+process.on("uncaughtException", function(e) {
     logger.error("Error %s: %s.\nLily will now attempt to reconnect.",
         e, e.stack);
     try {
