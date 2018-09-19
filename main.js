@@ -1,9 +1,15 @@
 const Discord = require("discord.js");
-const config = require("./config.json");
 const constants = require("./constants.js");
 const logger = require("./logger.js");
 
-client = new Discord.Client();
+var client = new Discord.Client();
+
+var express = require('express');
+var app = express();
+app.get("/", (request, response) => {
+  response.sendStatus(200);
+});
+app.listen(process.env.PORT);
 
 client.on("ready", () => {
     logger.info("Lily is online");
@@ -18,7 +24,7 @@ var cmdList = {
             if (msg.mentions.members.size > 0) {
                 // hug with @ hugs @-user
                 msg.mentions.members.forEach(function(member) {
-                    constants.huggableList[member] = true;
+                    constants.huggableList[member.id] = true;
                     msg.channel.send(member + ", would you like a hug?");
                   });
             } else if (!(suffix == "")) {
@@ -26,7 +32,7 @@ var cmdList = {
                 msg.channel.send("*Lily hugs " + suffix + ".*");
             } else {
                 // hug without suffix hugs author
-                constants.huggableList[msg.author] = true;
+                constants.huggableList[msg.author.id] = true;
                 msg.channel.send(msg.author + ", would you like a hug?");
             }
         }
@@ -46,8 +52,6 @@ var cmdList = {
                 var loopCheck = 0;
                 msg.mentions.members.forEach(function(member, index, array) {
                     memberList += member;
-                    logger.info(loopCheck);
-                    logger.info(array.length);
                     if (loopCheck < msg.mentions.members.size - 2) {
                         memberList += ", ";
                     } else if (loopCheck < msg.mentions.members.size - 1) {
@@ -122,7 +126,7 @@ var cmdList = {
                         diceSum += Number(faces[i]);
                     }
                 } else if (faces[i].split("d").length == 2) { // RPG-style roll
-                    rpgRoll = faces[i].split("d");
+                    var rpgRoll = faces[i].split("d");
                     if (rpgRoll[0] == "") {
                         rpgRoll[0] = 1;
                     }
@@ -150,7 +154,7 @@ var cmdList = {
                         }
                     }
                 } else if(faces[i].split(" ").length == 2){ // Range roll
-                    rangeRoll = faces[i].split(" ");
+                    var rangeRoll = faces[i].split(" ");
                     if (!Number.isInteger(Number(rangeRoll[0])) ||
                         !Number.isInteger(Number(rangeRoll[1]))) {
                         diceString = "Error: Both values in a range roll"
@@ -202,12 +206,76 @@ var cmdList = {
 }
 
 client.on("message", (msg) => {
-    if(msg.isMentioned(client.user)){
-        if (constants.huggableList[msg.author] == true) {
+    if(msg.author.id != client.user.id && (msg.content.startsWith(constants
+        .CMD_PREFIX))){
+        if (msg.mentions.members.get(client.user.id)) {
+            msg.channel.send(constants.botName + " glares at "
+                + msg.author + ". 'Are you trying to break me?'");
+        } else {
+            logger.info(msg.author + " entered command " + msg.content);
+            var cmdData = msg.content.split(" ")[0]
+                .substring(constants.CMD_PREFIX.length).toLowerCase();
+            var suffix = msg.content.substring(cmdData.length
+                + constants.CMD_PREFIX.length + 1)
+            var cmd = cmdList[cmdData];
+            if(cmdData === "help"){
+                if(suffix){
+                    var cmd = cmdList[suffix];
+                    var helpMsg = "";
+                    try {
+                        helpMsg += "Data for " + cmd.name;
+                        var cmdUse = cmd.usage;
+                        if(cmdUse){
+                            helpMsg += " " + cmdUse;
+                        }
+                        var cmdDesc = cmd.description;
+                        if(cmdDesc){
+                            helpMsg += ": " + cmdDesc;
+                        }
+                        helpMsg += "\n"
+                        msg.channel.send(helpMsg);
+                    } catch(e) {
+                        msg.channel.send("That command does not exist.");
+                    }
+                } else {
+                    msg.author.send("**Lily's Commands:**").then(function(){
+                    var helpMsg = "";
+                    for(var i in cmdList) {
+                        helpMsg += "**" + constants.CMD_PREFIX;
+                        var cmdName = cmdList[i].name;
+                        if(cmdName){
+                            helpMsg += cmdName;
+                        }
+                        var cmdUse = cmdList[i].usage;
+                        if(cmdUse){
+                            helpMsg += " " + cmdUse;
+                        }
+                        var cmdDesc = cmdList[i].description;
+                        if(cmdDesc){
+                            helpMsg += ":** " + cmdDesc;
+                        }
+                        helpMsg += "\n";
+                    }
+                    msg.channel.send(msg.author + ", I sent you a DM.");
+                    msg.author.send(helpMsg);
+                });
+                }
+            }
+            else if(cmd) {
+                try{
+                    cmd.process(client,msg,suffix);
+                } catch(e){
+                    msg.channel.send("Unknown error.  See log file for details.");
+                    logger.error("Error %s: %s.", e, e.stack);
+                }
+            }
+        }
+    } else if(msg.isMentioned(client.user)){
+        if (constants.huggableList[msg.author.id] == true) {
             if (msg.content.toLowerCase().search("yes") > -1) {
                 msg.channel.send(constants.botName + " hugs " + msg.author
                     + ".");
-                constants.huggableList();
+                constants.huggableList[msg.author.id] == false;
             } else if (msg.content.toLowerCase().search("no") > -1) {
                 msg.channel.send("Okay, " + msg.author + ".  Carry on!")
 
@@ -217,69 +285,9 @@ client.on("message", (msg) => {
             }
         } else {
             msg.channel.send("Hi, I'm Lily. I'm here to greet new users, fetch"
-                + " things, and offer hugs.  I use the " + constants.CMD_PREFIX
-                + " prefix.  Use " + constants.CMD_PREFIX
+                + " things, and offer hugs. I use the " + constants.CMD_PREFIX
+                + " prefix. Use " + constants.CMD_PREFIX
                 + "help to find out more.");
-        }
-    }
-    if(msg.author.id != client.user.id && (msg.content.startsWith(constants
-        .CMD_PREFIX))){
-        logger.info(msg.author + " entered command " + msg.content);
-        var cmdData = msg.content.split(" ")[0]
-            .substring(constants.CMD_PREFIX.length).toLowerCase();
-        var suffix = msg.content.substring(cmdData.length
-            + constants.CMD_PREFIX.length + 1)
-        var cmd = cmdList[cmdData];
-        if(cmdData === "help"){
-            if(suffix){
-                var cmd = cmdList[suffix];
-                var helpMsg = "";
-                try {
-                    helpMsg += "Data for " + cmd.name;
-                    var cmdUse = cmd.usage;
-                    if(cmdUse){
-                        helpMsg += " " + cmdUse;
-                    }
-                    var cmdDesc = cmd.description;
-                    if(cmdDesc){
-                        helpMsg += ": " + cmdDesc;
-                    }
-                    helpMsg += "\n"
-                    msg.channel.send(helpMsg);
-                } catch(e) {
-                    msg.channel.send("That command does not exist.");
-                }
-            } else {
-                msg.author.send("**Lily's Commands:**").then(function(){
-                var helpMsg = "";
-                for(var i in cmdList) {
-                    helpMsg += "**" + constants.CMD_PREFIX;
-                    var cmdName = cmdList[i].name;
-                    if(cmdName){
-                        helpMsg += cmdName;
-                    }
-                    var cmdUse = cmdList[i].usage;
-                    if(cmdUse){
-                        helpMsg += " " + cmdUse;
-                    }
-                    var cmdDesc = cmdList[i].description;
-                    if(cmdDesc){
-                        helpMsg += ":** " + cmdDesc;
-                    }
-                    helpMsg += "\n";
-                }
-                msg.channel.send(msg.author + ", I sent you a DM.");
-                msg.author.send(helpMsg);
-            });
-            }
-        }
-        else if(cmd) {
-            try{
-                cmd.process(client,msg,suffix);
-            } catch(e){
-                msg.channel.send("Unknown error.  See log file for details.");
-                logger.error("Error %s: %s.", e, e.stack);
-            }
         }
     } else {
         return
@@ -291,23 +299,29 @@ client.on("guildMemberAdd", member => {
         .rulesLoc["default"]);
     var introChannel = member.guild.channels.find("name", constants
         .introLoc["default"]);
+    if (constants.rulesLoc[member.guild.id]) {
+        rulesChannel = member.guild.channels.find("name", constants
+            .rulesLoc[member.guild.id]);
+    }
+    if (constants.introLoc[member.guild.id]) {
+        introChannel = member.guild.channels.find("name", constants
+            .introLoc[member.guild.id]);
+    }
     member.guild.channels.find("name", "general").send("Welcome to "
         + member.guild.name + ", " + member + "! Please read our Code of"
         + " Conduct in " + rulesChannel + ", and introduce yourself in "
-        + introChannel + ".\nThe required format for introductions can be"
-        + " found in the pinned post.");
+        + introChannel + ".");
 });
 
 process.on("uncaughtException", function(e) {
     logger.error("Error %s: %s.\nLily will now attempt to reconnect.",
         e, e.stack);
     try {
-        client.login(config.token);
-        fileSystemCheck();
+        client.login(process.env.SECRET);
     } catch (e) {
         logger.error("Reconnection failed.\nLily will now terminate.");
         process.exit(1);
     }
   })
 
-client.login(config.token);
+client.login(process.env.SECRET);

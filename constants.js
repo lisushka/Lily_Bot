@@ -1,5 +1,9 @@
-var rulesLoc = {default: "server-rules"};
-var introLoc = {default: "introductions"};
+var rulesLoc = {
+    default: "server-rules",
+    "462809129875144705": "announcements"};
+var introLoc = {
+    default: "introductions",
+    "462809129875144705": "userdirectory"};
 var botName = "Lily";
 var huggableList = {};
 const CMD_PREFIX = "?";
