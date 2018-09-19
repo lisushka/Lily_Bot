@@ -1,8 +1,22 @@
 const Discord = require("discord.js");
 const constants = require("./constants.js");
 const logger = require("./logger.js");
+const sqlite3 = require('sqlite3').verbose();
 
 var client = new Discord.Client();
+
+// open the database
+let db = new sqlite3.Database('.data/quotes.db', sqlite3.OPEN_READWRITE,
+    (err) => {
+    if (err) {
+        logger.error(err.message);
+    }
+    logger.info("Quote DB connected.");
+});
+
+db.run("CREATE TABLE IF NOT EXISTS Quote(msgID text)");
+
+db.close();
 
 var express = require('express');
 var app = express();
@@ -18,7 +32,8 @@ client.on("ready", () => {
 var cmdList = {
     "hug": {
         name: "hug",
-        description: "Hug a fellow Wrimo.",
+        description: "Hug a fellow Wrimo.  Reply with @Lily_Bot Yes to accept,"
+            + " and @Lily_Bot No to decline.",
         usage: "[@user]",
         process: function(client,msg,suffix) {
             if (msg.mentions.members.size > 0) {
@@ -55,7 +70,7 @@ var cmdList = {
                     if (loopCheck < msg.mentions.members.size - 2) {
                         memberList += ", ";
                     } else if (loopCheck < msg.mentions.members.size - 1) {
-                        memberList += ", and ";
+                        memberList += " and ";
                     }
                     loopCheck++;
                 });
@@ -102,6 +117,36 @@ var cmdList = {
             var choiceID = (Math.floor(Math.random() * constants.WEATHER_LIST
                 .length));
             msg.channel.send(constants.WEATHER_LIST[choiceID]);
+        }
+    },
+    "timer": {
+        name: "timer",
+        description: "Set a timer. Lily will DM you the [message] in <minutes>"
+            + " minutes.",
+        usage: "minutes [message]",
+        process: function(client,msg,suffix) {
+            var args = suffix.split(" ");
+            var time = args.shift();
+            var timerMsg = args.join(" ");
+            if (isNaN(time)){
+                msg.channel.send("Hey, " + msg.author
+                    + ", I need to know how long to wait!");
+            } else if(time <= 0){
+                msg.channel.send("Hey," + msg.author
+                    + ", I can't DM you in the past!");
+            } else {
+                if (Number(time) == 1) {
+                    msg.channel.send("Sure, " + msg.author
+                    + "! I'll DM you in " + time + " minute!");
+                } else {
+                    msg.channel.send("Sure, " + msg.author
+                    + "! I'll DM you in " + time + " minutes!");
+                }
+                var timeToMS = time * 60000;
+                setTimeout(function(){
+                    msg.author.send("Time's up! " + timerMsg)
+                }, timeToMS);
+            }
         }
     },
     "roll": {
@@ -311,6 +356,28 @@ client.on("guildMemberAdd", member => {
         + member.guild.name + ", " + member + "! Please read our Code of"
         + " Conduct in " + rulesChannel + ", and introduce yourself in "
         + introChannel + ".");
+});
+
+client.on('messageReactionAdd', (reaction, user) => {
+    if(reaction.emoji.name === ":carrot:") {
+        let db = new sqlite3.Database('.data/quotes.db', sqlite3.OPEN_READWRITE,
+            (err) => {
+            if (err) {
+                logger.error(err.message);
+            }
+            logger.info("Quote DB connected.");
+        });
+
+        db.run("INSERT INTO Quote(msgID text) VALUES(?, ?)", ['C'], function(err) {
+            if (err) {
+              return console.log(err.message);
+            }
+            // get the last insert id
+            logger.info("Message added to quote bank.");
+          });
+
+        db.close();
+    }
 });
 
 process.on("uncaughtException", function(e) {
