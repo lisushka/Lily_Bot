@@ -49,7 +49,11 @@ const WEATHER_LIST =
     "It's snowing!  Would you like to make a snow angel?",
     "There are showers in the vicinity.  It's sort of chilly at eight degrees.",
     "It's very wet out there.  Submarine stocks must be soaring!",
-    "It's raining cats and dogs.  That explains the noise!"
+    "It's raining cats and dogs.  That explains the noise!",
+    "No inspiration today.  The page will remain blank.  There's"
+        + " nothing to say.",
+    "It's extremely wet today.  Lovely weather for ducks!",
+    ""
 ];
 
 exports.rulesLoc = rulesLoc;

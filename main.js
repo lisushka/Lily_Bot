@@ -1,12 +1,16 @@
 const Discord = require("discord.js");
 const constants = require("./constants.js");
+const config = require("./config.json");
 const logger = require("./logger.js");
 const sqlite3 = require('sqlite3').verbose();
+
+const path = require('path');
+const dbPath = path.resolve(__dirname, 'quotes.db');
 
 var client = new Discord.Client();
 
 // open the database
-let db = new sqlite3.Database('.data/quotes.db', sqlite3.OPEN_READWRITE,
+var db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE,
     (err) => {
     if (err) {
         logger.error(err.message);
@@ -14,7 +18,7 @@ let db = new sqlite3.Database('.data/quotes.db', sqlite3.OPEN_READWRITE,
     logger.info("Quote DB connected.");
 });
 
-db.run("CREATE TABLE IF NOT EXISTS Quote(msgID text)");
+db.run("CREATE TABLE IF NOT EXISTS Quote(msgID author server text)");
 
 db.close();
 
@@ -359,7 +363,7 @@ client.on("guildMemberAdd", member => {
 });
 
 client.on('messageReactionAdd', (reaction, user) => {
-    if(reaction.emoji.name === ":carrot:") {
+    if(reaction.emoji.name === "🥕") {
         let db = new sqlite3.Database('.data/quotes.db', sqlite3.OPEN_READWRITE,
             (err) => {
             if (err) {
@@ -368,7 +372,11 @@ client.on('messageReactionAdd', (reaction, user) => {
             logger.info("Quote DB connected.");
         });
 
-        db.run("INSERT INTO Quote(msgID text) VALUES(?, ?)", ['C'], function(err) {
+        db.run("INSERT INTO Quote(msgID author server text) VALUES(?, ?, ?, ?)",
+            [reaction.message.id,
+            reaction.message.author.id,
+            reaction.message.guild.id,
+            reaction.message.content], function(err) {
             if (err) {
               return console.log(err.message);
             }
@@ -389,6 +397,10 @@ process.on("uncaughtException", function(e) {
         logger.error("Reconnection failed.\nLily will now terminate.");
         process.exit(1);
     }
-  })
+});
+
+process.on("error", function(e) {
+    logger.error(e.stack);
+});
 
 client.login(process.env.SECRET);
