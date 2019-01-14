@@ -1,33 +1,8 @@
 const Discord = require("discord.js");
 const constants = require("./constants.js");
-const config = require("./config.json");
 const logger = require("./logger.js");
-const sqlite3 = require('sqlite3').verbose();
-
-const path = require('path');
-const dbPath = path.resolve(__dirname, 'quotes.db');
 
 var client = new Discord.Client();
-
-// open the database
-var db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE,
-    (err) => {
-    if (err) {
-        logger.error(err.message);
-    }
-    logger.info("Quote DB connected.");
-});
-
-db.run("CREATE TABLE IF NOT EXISTS Quote(msgID author server text)");
-
-db.close();
-
-var express = require('express');
-var app = express();
-app.get("/", (request, response) => {
-  response.sendStatus(200);
-});
-app.listen(process.env.PORT);
 
 client.on("ready", () => {
     logger.info("Lily is online");
@@ -362,32 +337,6 @@ client.on("guildMemberAdd", member => {
         + introChannel + ".");
 });
 
-client.on('messageReactionAdd', (reaction, user) => {
-    if(reaction.emoji.name === "🥕") {
-        let db = new sqlite3.Database('.data/quotes.db', sqlite3.OPEN_READWRITE,
-            (err) => {
-            if (err) {
-                logger.error(err.message);
-            }
-            logger.info("Quote DB connected.");
-        });
-
-        db.run("INSERT INTO Quote(msgID author server text) VALUES(?, ?, ?, ?)",
-            [reaction.message.id,
-            reaction.message.author.id,
-            reaction.message.guild.id,
-            reaction.message.content], function(err) {
-            if (err) {
-              return console.log(err.message);
-            }
-            // get the last insert id
-            logger.info("Message added to quote bank.");
-          });
-
-        db.close();
-    }
-});
-
 process.on("uncaughtException", function(e) {
     logger.error("Error %s: %s.\nLily will now attempt to reconnect.",
         e, e.stack);
@@ -403,4 +352,4 @@ process.on("error", function(e) {
     logger.error(e.stack);
 });
 
-client.login(process.env.SECRET);
+client.login(process.env.DISCORD_TOKEN);
