@@ -2,14 +2,14 @@
   "name": "lily_bot",
   "version": "1.0.0",
   "description": "A greeting and conversation bot for MelbNaNo.",
-  "main": "main.js",
+  "main": "index.js",
   "dependencies": {
     "discord.js": "^11.3.2",
     "sqlite3": "^4.0.2",
     "winston": "^2.4.1"
   },
   "scripts": {
-    "start": "node main.js",
+    "start": "node index.js",
     "test": "node tests.js"
   },
   "repository": {
