@@ -53,7 +53,8 @@ const WEATHER_LIST =
     "No inspiration today.  The page will remain blank.  There's"
         + " nothing to say.",
     "It's extremely wet today.  Lovely weather for ducks!",
-    ""
+    "It's extremely hot today.  How rude!"
+    "The sun is nice today.  Hopefully it rains soon, though."
 ];
 
 exports.rulesLoc = rulesLoc;
