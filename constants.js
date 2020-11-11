@@ -56,7 +56,7 @@ const WEATHER_LIST =
     "It's extremely hot today.  How rude!"
     "The sun is nice today.  Hopefully it rains soon, though."
     "How about this weather?  We sure are having a lot of it!"
-    "It's scorching over there, but nice and wet over here.  Australia really is a wonderful country."
+    "It's quite warm over there, but nice and wet up here.  Australia really is a wonderful country."
 ];
 
 exports.rulesLoc = rulesLoc;
