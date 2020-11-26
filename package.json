@@ -4,7 +4,7 @@
   "description": "A greeting and conversation bot for MelbNaNo.",
   "main": "index.js",
   "dependencies": {
-    "discord.js": "^11.3.2",
+    "discord.js": "^12.5.1",
     "sqlite3": "^4.0.2",
     "winston": "^2.4.1"
   },
