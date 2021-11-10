@@ -6,7 +6,7 @@
   "dependencies": {
     "discord.js": "^12.5.3",
     "sqlite3": "^5.0.2",
-    "winston": "^2.4.1"
+    "winston": "^3.3.3"
   },
   "scripts": {
     "start": "node index.js",
